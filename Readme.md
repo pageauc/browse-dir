@@ -24,9 +24,10 @@ Open a terminal session and clone the repository.
 Edit the config.py settings	
 	
 	nano config.py
-	# Edit the WEB_SERVER_PORT, WEB_SERVER_ROOT, WEB_PAGE_TITLE as required.
-	# The WEB_SERVER_ROOT can be a relative or absolute path to the location of the media
-	# To exit and save changes Press Ctrl-x y  
+	
+Edit the WEB_SERVER_PORT, WEB_SERVER_ROOT, WEB_PAGE_TITLE as required.
+The WEB_SERVER_ROOT can be a relative or absolute path to the location of the media
+To exit and save changes Press Ctrl-x y  
 
 To launch the web server
 
