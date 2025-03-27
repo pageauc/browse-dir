@@ -2,15 +2,17 @@
 
 ### Introduction
 
-This is a python3 flask application that allows browsing media files in a web frame.
-A directory listing of files/folders is displayed in the Right Frame.
-File content eg images are displayed in the Left Frame.  Use up/down arrows or mouse to scroll the listing.
-Content will automatically be displayed in the Left Frame
-A folder breadcrumb in the top left corner allows easily moving to any previous folder.
-The frame divider can be repositioned usinf the mouse <-->. The position will be saved between folders and run sessions.
-Use the Right Frame pull down to change the listing sort.  This will also be saved between folders
+I developed this app completely from scratch using only DeepSeek generative AI prompts for the coding. I did add the import from config.py feature myself and the mobile switch. I started this project as an optional replacement for my https://github.com/pageauc/speed-camera and https://github.com/pageauc/pi-timolo2 projects
 
-I developed this using DeepSeek AI, as an optional replacement for my https://github.com/pageauc/speed-camera and https://github.com/pageauc/pi-timolo2 projects
+I called my DeepSeek AI assistant Codey. It was a rewarding and at times frustrating experience. I started from scratch using just prompts and no example starting code.
+
+It is a python3 flask application that allows browsing media files in a web frame.
+A directory listing of files/folders is displayed in the Right Frame.
+File content Eg images are displayed in the Left Frame. Use up/down arrows or mouse to scroll the listing.
+Content will automatically be displayed in the Left Frame
+A folder breadcrumb in the top left corner allows easy navigation to a previous folder.
+The frame divider can be repositioned using the mouse <-->. The position will be saved between folders and run sessions.
+Use the Right Frame pull down to change the listing sort. This will also be saved between folders.
 
 ### Installation
 
@@ -47,7 +49,7 @@ From a browser on your local network paste the flask url eg
 ### Credits
 
 Claude Pageau developed this application from scatch using DeepSeek AI over approx three chat sessions.  
-I called my assistant Codey. It was a rewarding and at times frustrating experiance. I started from scratch using just prompts and no example starting code.
+I called my assistant Codey. It was a rewarding and at times frustrating experience. I started from scratch using just prompts and no example starting code.
 
 
    
