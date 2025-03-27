@@ -4,7 +4,7 @@
 
 This is a python3 flask application that allows browsing media files in a web frame.
 A directory listing of files/folders is displayed in the Right Frame.
-File content eg images are displayed in the left frame.  Use up/down arrows or mouse to scroll the listing.
+File content eg images are displayed in the Left Frame.  Use up/down arrows or mouse to scroll the listing.
 Content will automatically be displayed in the Left Frame
 A folder breadcrumb in the top left corner allows easily moving to any previous folder.
 The frame divider can be repositioned usinf the mouse <-->. The position will be saved between folders and run sessions.
