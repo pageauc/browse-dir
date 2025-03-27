@@ -26,8 +26,8 @@ Edit the config.py settings
 	nano config.py
 	
 Edit the WEB_SERVER_PORT, WEB_SERVER_ROOT, WEB_PAGE_TITLE as required.
-The WEB_SERVER_ROOT can be a relative or absolute path to the location of the media
-To exit and save changes Press Ctrl-x y  
+The WEB_SERVER_ROOT can be a relative or absolute path to the location of the media.
+To exit and save nano changes Press Ctrl-x y  
 
 To launch the web server
 
@@ -35,11 +35,12 @@ To launch the web server
 	
 From a browser on your local network paste the flask url eg
 
-   http://192.168.1.178:5010
+    http://192.168.1.178:5010
 
 ### Credits
 
-I developed this application almost completely using DeepSeek AI.  I called my assistant Codey
+Claude Pageau developed this application almost completely using DeepSeek AI over approx three chat sessions.  
+I called my assistant Codey. It was a rewarding and at times frustrating experiance.
 
 
    
