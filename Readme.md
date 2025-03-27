@@ -46,8 +46,8 @@ From a browser on your local network paste the flask url eg
 
 ### Credits
 
-Claude Pageau developed this application almost completely using DeepSeek AI over approx three chat sessions.  
-I called my assistant Codey. It was a rewarding and at times frustrating experiance.
+Claude Pageau developed this application from scatch using DeepSeek AI over approx three chat sessions.  
+I called my assistant Codey. It was a rewarding and at times frustrating experiance. I started from scratch using just prompts and no example starting code.
 
 
    
