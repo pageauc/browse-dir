@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ page_title }}</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --hover-color: #f1f1f1;
+            --border-color: #ddd;
+            --text-color: #333;
+            --bg-color: #fff;
+            --tap-highlight: rgba(0,0,0,0.1);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #8ab4f8;
+                --hover-color: #333;
+                --border-color: #444;
+                --text-color: #f1f1f1;
+                --bg-color: #121212;
+                --tap-highlight: rgba(255,255,255,0.1);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: var(--tap-highlight);
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            touch-action: manipulation;
+        }
+
+        .header {
+            padding: 12px 15px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumbs a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 3px;
+        }
+
+        .breadcrumbs .separator {
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        select {
+            padding: 10px 14px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .file-item {
+            min-height: 48px;
+            padding: 14px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item a {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .file-item:active {
+            background-color: var(--hover-color);
+        }
+
+        .file-icon {
+            margin-right: 12px;
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .file-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-date {
+            font-size: 12px;
+            color: #777;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .preview-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            padding: 12px;
+            background-color: #222;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .preview-content img,
+        .preview-content video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Android Chrome specific fixes */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .file-item {
+                -webkit-transform: translateZ(0);
+            }
+            .file-preview {
+                -webkit-user-select: none;
+            }
+        }
+
+        /* Touch device adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            .file-item {
+                padding: 16px 15px;
+            }
+            select {
+                padding: 12px 16px;
+            }
+            .close-btn {
+                padding: 12px;
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="breadcrumbs">
+            <a href="{{ url_for('browse') }}">Home</a>
+            {% for part in current_path.split('/') if current_path %}
+                <span class="separator">/</span>
+                {% if loop.last %}
+                    <span>{{ part }}</span>
+                {% else %}
+                    <a href="{{ url_for('browse', subpath='/'.join(current_path.split('/')[:loop.index])) }}">{{ part }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div class="title-bar">
+            <h1 style="margin: 0; font-size: 18px;">{{ page_title }}</h1>
+            <div class="sort-controls">
+                <select id="sortSelector">
+                    <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Newest First</option>
+                    <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                    <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>A-Z</option>
+                    <option value="name_desc" {% if current_sort == 'name_desc' %}selected{% endif %}>Z-A</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <ul class="file-list">
+        {% if current_path %}
+            <li class="file-item">
+                <a href="{{ url_for('browse', subpath=parent_path if parent_path else '') }}" class="folder-link">
+                    <span class="file-icon">📁</span>
+                    <span class="file-name">.. (Parent Directory)</span>
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for item in items %}
+            <li class="file-item">
+                {% if item.is_file %}
+                    {% if item.name.lower().endswith(('.jpg','.jpeg','.png','.gif','.mp4','.webm','.txt')) %}
+                        <div class="file-preview" data-url="{{ url_for('files', filename=item.path) }}" data-name="{{ item.name }}"
+                             data-type="{% if item.name.lower().endswith(('.jpg','.jpeg','.png','.gif')) %}image{% elif item.name.lower().endswith(('.mp4','.webm')) %}video{% else %}text{% endif %}">
+                            <span class="file-icon">
+                                {% if item.name.lower().endswith(('.jpg','.jpeg','.png','.gif')) %}🖼️
+                                {% elif item.name.lower().endswith(('.mp4','.webm')) %}🎬
+                                {% else %}📝{% endif %}
+                            </span>
+                            <span class="file-name">{{ item.name }}</span>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('files', filename=item.path) }}" target="_blank" class="file-link">
+                            <span class="file-icon">📄</span>
+                            <span class="file-name">{{ item.name }}</span>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('browse', subpath=item.path) }}" class="folder-link">
+                        <span class="file-icon">📁</span>
+                        <span class="file-name">{{ item.name }}</span>
+                    </a>
+                {% endif %}
+                <span class="file-date">{{ item.create_time | datetimeformat }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="preview-container" id="previewContainer">
+        <div class="preview-header">
+            <span id="previewTitle"></span>
+            <button class="close-btn" id="closePreview">✕</button>
+        </div>
+        <div class="preview-content" id="previewContent"></div>
+    </div>
+
+    <script>
+        // Detect Android Chrome
+        const isAndroidChrome = /Android.*Chrome\//.test(navigator.userAgent);
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Sort selector
+        document.getElementById('sortSelector').addEventListener('change', function() {
+            document.cookie = `sort_preference=${this.value};path=/;max-age=${60*60*24*30}`;
+            window.location.reload();
+        });
+
+        // Enhanced file preview handling
+        function setupPreviewHandlers() {
+            document.querySelectorAll('.file-preview').forEach(item => {
+                // Remove existing event listeners to prevent duplicates
+                item.removeEventListener('click', handlePreview);
+                item.removeEventListener('touchstart', handleTouchPreview);
+                
+                // Add appropriate event listeners
+                item.addEventListener('click', handlePreview);
+                if (isTouchDevice) {
+                    item.addEventListener('touchstart', handleTouchPreview, {passive: true});
+                }
+            });
+        }
+
+        function handlePreview(e) {
+            if (e.type === 'click' && isTouchDevice) {
+                // Prevent double triggers on touch devices
+                const now = Date.now();
+                if (this.lastClick && (now - this.lastClick) < 500) return;
+                this.lastClick = now;
+            }
+            
+            showPreview(this);
+        }
+
+        function handleTouchPreview(e) {
+            // Highlight the touched element
+            this.style.backgroundColor = 'var(--hover-color)';
+            setTimeout(() => {
+                this.style.backgroundColor = '';
+            }, 200);
+            
+            // Trigger the preview after a slight delay
+            setTimeout(() => {
+                showPreview(this);
+            }, 50);
+        }
+
+        function showPreview(element) {
+            const type = element.dataset.type;
+            const url = element.dataset.url;
+            const name = element.dataset.name;
+            
+            const previewContainer = document.getElementById('previewContainer');
+            const previewContent = document.getElementById('previewContent');
+            const previewTitle = document.getElementById('previewTitle');
+            
+            previewTitle.textContent = name;
+            previewContent.innerHTML = '';
+            
+            if (type === 'image') {
+                const img = document.createElement('img');
+                img.src = url;
+                img.onload = function() {
+                    previewContent.appendChild(img);
+                };
+            } 
+            else if (type === 'video') {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.style.maxWidth = '100%';
+                const source = document.createElement('source');
+                source.src = url;
+                source.type = 'video/mp4';
+                video.appendChild(source);
+                previewContent.appendChild(video);
+            }
+            else if (type === 'text') {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(text => {
+                        previewContent.innerHTML = `
+                            <div style="width: 100%; height: 100%; overflow: auto; padding: 20px; background: #fff; color: #000;">
+                                <pre>${text}</pre>
+                            </div>
+                        `;
+                    });
+            }
+            
+            previewContainer.style.display = 'flex';
+            sessionStorage.setItem('previousPath', window.location.pathname);
+            
+            // Push state for Android back button
+            if (isAndroidChrome) {
+                history.pushState({preview: true}, '');
+            }
+        }
+
+        // Close preview handler
+        function closePreview() {
+            document.getElementById('previewContainer').style.display = 'none';
+            const previousPath = sessionStorage.getItem('previousPath');
+            if (previousPath && previousPath !== window.location.pathname) {
+                window.location.href = previousPath;
+            }
+        }
+
+        document.getElementById('closePreview').addEventListener('click', closePreview);
+        
+        if (isTouchDevice) {
+            document.getElementById('closePreview').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                closePreview();
+            }, {passive: false});
+        }
+
+        // Android Chrome back button support
+        if (isAndroidChrome) {
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.preview) {
+                    closePreview();
+                }
+            });
+        }
+
+        // Auto dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.style.setProperty('--text-color', '#f1f1f1');
+            document.documentElement.style.setProperty('--bg-color', '#121212');
+            document.documentElement.style.setProperty('--border-color', '#444');
+        }
+
+        // Initial setup
+        setupPreviewHandlers();
+    </script>
+</body>
+</html>

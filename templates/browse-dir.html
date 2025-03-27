@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .header-container {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+            padding: 10px 15px;
+        }
+        .breadcrumbs-container {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            min-width: 0;
+        }
+        .breadcrumbs a {
+            color: #337ab7;
+            text-decoration: none;
+            margin: 0 5px;
+            white-space: nowrap;
+        }
+        .breadcrumbs a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumbs .separator {
+            color: #777;
+            margin: 0 5px;
+        }
+        .breadcrumbs .current {
+            color: #333;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .page-title {
+            flex: 1;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            white-space: nowrap;
+            padding: 0 20px;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .frame {
+            overflow: auto;
+            padding: 10px;
+        }
+        .left-frame {
+            flex: 1 1 auto;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .right-frame {
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 300px;
+            min-width: 200px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .resizer {
+            width: 5px;
+            background-color: #ddd;
+            cursor: ew-resize;
+        }
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+            min-width: fit-content;
+        }
+        .file-list li {
+            margin: 5px 0;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            min-width: fit-content;
+            cursor: pointer;
+        }
+        .file-list li.selected {
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+        .file-list a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .file-list a:hover {
+            text-decoration: underline;
+        }
+        .folder-icon {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        .footer {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .media-container {
+            width: 100%;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            overflow: hidden;
+        }
+        .media-content {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .text-content {
+            width: 100%;
+            height: 80vh;
+            overflow: auto;
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .file-icon {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+        }
+        .video-container {
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            justify-content: center;
+            background: #000;
+        }
+        .sort-controls {
+            margin: 10px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+        .sort-controls select {
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 0.9em;
+            background: white;
+            cursor: pointer;
+        }
+        .sort-controls label {
+            font-size: 0.95em;
+            color: #555;
+        }
+        .file-list-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <div class="breadcrumbs-container">
+            <div class="breadcrumbs">
+                {% set path_parts = current_path.split('/') if current_path else [] %}
+                {% set accumulated_path = '' %}
+                <a href="{{ url_for('browse') }}">Home</a>
+                {% for part in path_parts %}
+                    {% set accumulated_path = accumulated_path + '/' + part if accumulated_path else part %}
+                    <span class="separator">/</span>
+                    {% if loop.last %}
+                        <span class="current">{{ part }}</span>
+                    {% else %}
+                        <a href="{{ url_for('browse', subpath=accumulated_path) }}">{{ part }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="page-title">
+            {{ page_title }}
+        </div> <font size="3">Up/Dn Arrows Scroll Dir Listing</font>
+        <div class="breadcrumbs-container"></div>
+    </div>
+
+    <div class="container">
+        <div class="frame left-frame" id="leftFrame">
+            <div class="media-container" id="mediaContainer">
+                <!-- Media content will be loaded here -->
+            </div>
+        </div>
+        <div class="resizer"></div>
+        <div class="frame right-frame" id="rightFrame">
+            <div class="sort-controls">
+                <label for="sortSelector">Dir Listing by:</label>
+                <select id="sortSelector">
+                    <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Date (Newest First)</option>
+                    <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Date (Oldest First)</option>
+                    <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="name_desc" {% if current_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                </select>
+            </div>
+            <div class="file-list-container">
+                <ul class="file-list" id="fileList">
+                    {% if current_path %}
+                        <li class="file-item" data-media-type="folder">
+                            <!-- Changed this line to go up one directory instead of root -->
+							<a href="{{ url_for('browse', subpath=parent_path if parent_path else '') }}"><span class="folder-icon">📁</span> .. (Parent Directory)</a>
+                        </li>
+                    {% endif %}
+                    {% for item in items %}
+                        <li class="file-item"
+                            data-media-type="{% if item.is_file %}{% if item.name.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}image{% elif item.name.endswith('.mp4') %}video{% elif item.name.endswith('.txt') %}text{% else %}other{% endif %}{% else %}folder{% endif %}"
+                            data-media-url="{% if item.is_file %}{{ url_for('files', filename=item.path) }}{% endif %}">
+                            {% if item.is_file %}
+                                {% if item.name.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                                    <span class="file-icon">🖼️</span> {{ item.name }} ( {{ item.create_time | datetimeformat }})
+                                {% elif item.name.endswith('.mp4') %}
+                                    <span class="file-icon">🎬</span> {{ item.name }} ( {{ item.create_time | datetimeformat }})
+                                {% elif item.name.endswith('.txt') %}
+                                    <span class="file-icon">📝</span> {{ item.name }} ( {{ item.create_time | datetimeformat }})
+                                {% else %}
+                                    <a href="{{ url_for('files', filename=item.path) }}" target="_blank">
+                                        <span class="file-icon">📄</span> {{ item.name }} ( {{ item.create_time | datetimeformat }})
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('browse', subpath=item.path) }}">
+                                    <span class="folder-icon">📁</span> {{ item.name }} ( {{ item.create_time | datetimeformat }})
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        {{ footer_info }}
+    </div>
+
+    <script>
+        // Global variables for navigation
+        let items = [];
+        let selectedIndex = -1;
+
+        // Display media in left frame
+        function displayMedia(mediaUrl, mediaType) {
+            const mediaContainer = document.getElementById('mediaContainer');
+            const imgBigger = {{ img_bigger }};
+
+            mediaContainer.innerHTML = ''; // Clear previous content
+
+            if (mediaType === 'image') {
+                const img = document.createElement('img');
+                img.src = mediaUrl;
+                img.className = 'media-content';
+                img.style.maxWidth = `${imgBigger * 100}%`;
+                img.onclick = () => window.open(mediaUrl, '_blank');
+                mediaContainer.appendChild(img);
+            }
+            else if (mediaType === 'video') {
+                const container = document.createElement('div');
+                container.className = 'video-container';
+
+                const video = document.createElement('video');
+                video.controls = true;
+                video.className = 'media-content';
+
+                const source = document.createElement('source');
+                source.src = mediaUrl;
+                source.type = 'video/mp4';
+
+                video.appendChild(source);
+                video.appendChild(document.createTextNode('Your browser does not support videos.'));
+                container.appendChild(video);
+                mediaContainer.appendChild(container);
+            }
+            else if (mediaType === 'text') {
+                fetch(mediaUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(text => {
+                        const textDiv = document.createElement('div');
+                        textDiv.className = 'text-content';
+                        textDiv.textContent = text;
+                        mediaContainer.appendChild(textDiv);
+                    })
+                    .catch(error => {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'text-content';
+                        errorDiv.textContent = 'Error loading text file: ' + error.message;
+                        mediaContainer.appendChild(errorDiv);
+                    });
+            }
+        }
+
+        // Select item (update appearance and display content)
+        function selectItem(index) {
+            if (items.length === 0) return;
+
+            // Validate index
+            if (index < 0) index = 0;
+            if (index >= items.length) index = items.length - 1;
+
+            // Remove previous selection
+            items.forEach(item => item.classList.remove('selected'));
+
+            // Set new selection
+            selectedIndex = index;
+            const item = items[selectedIndex];
+            item.classList.add('selected');
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Display content if media file
+            const mediaType = item.dataset.mediaType;
+            const mediaUrl = item.dataset.mediaUrl;
+            if (mediaType && mediaUrl && ['image', 'video', 'text'].includes(mediaType)) {
+                displayMedia(mediaUrl, mediaType);
+            }
+        }
+
+        // Handle keyboard navigation
+        function handleKeyDown(e) {
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                let newIndex = selectedIndex + 1;
+                // Skip folders and non-media files
+                while (newIndex < items.length &&
+                      !['image', 'video', 'text'].includes(items[newIndex].dataset.mediaType)) {
+                    newIndex++;
+                }
+                if (newIndex < items.length) {
+                    selectItem(newIndex);
+                }
+            }
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                let newIndex = selectedIndex - 1;
+                // Skip folders and non-media files
+                while (newIndex >= 0 &&
+                      !['image', 'video', 'text'].includes(items[newIndex].dataset.mediaType)) {
+                    newIndex--;
+                }
+                if (newIndex >= 0) {
+                    selectItem(newIndex);
+                }
+            }
+        }
+
+        // Sort selector functionality
+        function setupSortSelector() {
+            const selector = document.getElementById('sortSelector');
+            selector.addEventListener('change', function() {
+                const sortOption = this.value;
+                document.cookie = `sort_preference=${sortOption};path=/;max-age=${60*60*24*30}`; // Store for 30 days
+                window.location.reload();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved divider position
+            const savedPosition = localStorage.getItem('dividerPosition');
+            if (savedPosition) {
+                document.getElementById('rightFrame').style.flex = `0 0 ${savedPosition}px`;
+            }
+
+            // Initialize items list
+            items = Array.from(document.querySelectorAll('.file-item'));
+
+            // Set up resizer
+            const resizer = document.querySelector('.resizer');
+            const rightFrame = document.getElementById('rightFrame');
+
+            let isResizing = false;
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            });
+
+            function resize(e) {
+                if (isResizing) {
+                    const containerWidth = document.querySelector('.container').offsetWidth;
+                    const newRightWidth = containerWidth - e.clientX - 5;
+                    const minRightWidth = 200;
+                    const maxRightWidth = containerWidth - 200; // Prevent left frame from disappearing
+
+                    if (newRightWidth >= minRightWidth && newRightWidth <= maxRightWidth) {
+                        rightFrame.style.flex = `0 0 ${newRightWidth}px`;
+                        localStorage.setItem('dividerPosition', newRightWidth);
+                    }
+                }
+            }
+
+            function stopResize() {
+                isResizing = false;
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+
+                // Force a reflow to ensure the new size is applied
+                document.body.style.overflow = 'hidden';
+                document.body.offsetHeight;
+                document.body.style.overflow = '';
+            }
+
+            // Click handling
+            items.forEach((item, index) => {
+                item.addEventListener('click', (e) => {
+                    // Don't interfere with actual links
+                    if (e.target.tagName === 'A') return;
+
+                    const mediaType = item.dataset.mediaType;
+                    const mediaUrl = item.dataset.mediaUrl;
+
+                    if (mediaType && mediaUrl && ['image', 'video', 'text'].includes(mediaType)) {
+                        selectItem(index);
+                    }
+                });
+            });
+
+            // Keyboard event listener
+            document.addEventListener('keydown', handleKeyDown);
+
+            // Sort selector setup
+            setupSortSelector();
+
+            // Select first displayable media by default
+            function findFirstDisplayableMedia() {
+                for (let i = 0; i < items.length; i++) {
+                    const mediaType = items[i].dataset.mediaType;
+                    const mediaUrl = items[i].dataset.mediaUrl;
+                    if (mediaType && mediaUrl && ['image', 'video', 'text'].includes(mediaType)) {
+                        selectItem(i);
+                        break;
+                    }
+                }
+            }
+            findFirstDisplayableMedia();
+        });
+    </script>
+</body>
+</html>
