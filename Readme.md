@@ -20,7 +20,7 @@ already installed on Bullseye and Bookworm.
 Open a terminal or SSH session and clone the github repository.
 
     cd ~
-    git clone https://github.com/pageauc/browse-dir
+    git clone https://github.com/pageauc/browse-dir.git
     cd browse-dir
     chmod +x browse-dir.py
 	
