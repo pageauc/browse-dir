@@ -36,6 +36,10 @@ To launch the web server
 From a browser on your local network paste the flask url eg
 
     http://192.168.1.178:5010
+	
+![webserver browser screen shot](browse-dir.png)
+	
+	
 
 ### Credits
 
