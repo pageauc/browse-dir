@@ -9,7 +9,7 @@ I called my DeepSeek AI assistant Codey. It was a rewarding and at times frustra
 It is a python3 flask application that allows browsing media files in a web frame.
 A directory listing of files/folders is displayed in the Right Frame.
 File content Eg images are displayed in the Left Frame. Use up/down arrows or mouse to scroll the listing.
-Content will automatically be displayed in the Left Frame
+Content will automatically be displayed in the Left Frame.
 A folder breadcrumb in the top left corner allows easy navigation to a previous folder.
 The frame divider can be repositioned using the mouse <-->. The position will be saved between folders and run sessions.
 Use the Right Frame pull down to change the listing sort. This will also be saved between folders.
