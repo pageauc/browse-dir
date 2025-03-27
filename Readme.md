@@ -14,6 +14,9 @@ I developed this using DeepSeek AI, as an optional replacement for my https://gi
 
 ### Installation
 
+This was developed for a Raspberry Pi but should run on other platforms. You should not need to install any dependencies since flask is
+already installed on Bullseye and Bookworm.
+
 Open a terminal session and clone the repository.
 
     cd ~
